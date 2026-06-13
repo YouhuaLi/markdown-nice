@@ -426,7 +426,8 @@ export const githubUpload = ({
     const dir = date.getFullYear() + seperator + (date.getMonth() + 1) + seperator + date.getDate();
 
     const dateFilename = new Date().getTime() + "-" + file.name;
-    const url = `https://api.github.com/repos/${config.username}/${config.repo}/contents/${dir}/${dateFilename}?access_token=${config.token}`;
+    // GitHub 已废弃 ?access_token= 查询参数鉴权，必须通过 Authorization 请求头传 token
+    const url = `https://api.github.com/repos/${config.username}/${config.repo}/contents/${dir}/${dateFilename}`;
 
     const data = {
       content: base64,
@@ -436,7 +437,10 @@ export const githubUpload = ({
     axios
       .put(url, data, {
         withCredentials,
-        headers,
+        headers: {
+          ...headers,
+          Authorization: `token ${config.token}`,
+        },
         onUploadProgress: ({total, loaded}) => {
           onProgress(
             {
